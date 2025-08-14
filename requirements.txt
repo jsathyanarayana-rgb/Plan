@@ -1,5 +1,5 @@
-Flask
-Flask-Cors
+Flask==2.3.3
+flask-cors
 requests
 python-dotenv
 waitress
