@@ -1,0 +1,164 @@
+/* ---------- Theme tokens (very close to ChatGPT) ---------- */
+:root {
+  --bg: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --card: #f9fafb;
+  --border: #e5e7eb;
+  --accent: #10a37f;        /* PlanIt green */
+  --accent-hover: #0d8b6d;
+  --user-bubble: #e5f5ef;   /* subtle green tint */
+  --bot-bubble: #ffffff;
+  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+:root.dark {
+  --bg: #343541;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --card: #40414f;
+  --border: #4b4c5a;
+  --accent: #10a37f;
+  --accent-hover: #0d8b6d;
+  --user-bubble: #2a2f2b;   /* darker user bubble */
+  --bot-bubble: #444654;    /* classic ChatGPT bot bubble */
+  --shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+/* ---------- App layout ---------- */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+}
+
+.app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  height: 100%;
+}
+
+/* ---------- Top bar ---------- */
+.topbar {
+  position: sticky; top: 0; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 10px 16px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: saturate(180%) blur(6px);
+}
+
+.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; }
+.brand .logo { filter: grayscale(0.2); }
+.title { letter-spacing: .2px; }
+
+.controls select {
+  appearance: none;
+  padding: 6px 10px;
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+/* ---------- Chat ---------- */
+.chat {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 24px 16px 120px; /* bottom space for composer */
+  overflow-y: auto;
+}
+
+.msg {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 12px;
+  padding: 14px 10px;
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  margin: 10px 0;
+  background: var(--bot-bubble);
+}
+
+.msg.user { background: var(--user-bubble); }
+.avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  font-weight: 700;
+}
+.avatar.bot { background: #19c37d22; border-color: #19c37d55; }
+.avatar.user { background: #60a5fa22; border-color: #60a5fa66; }
+
+.bubble {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* code-ish look for bot replies */
+.bubble pre, .bubble code {
+  background: rgba(0,0,0,0.07);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+}
+
+/* ---------- Composer ---------- */
+.composer {
+  position: fixed; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(180deg, transparent, var(--bg) 40%);
+  padding: 24px 12px 16px;
+}
+.input-wrap {
+  max-width: 920px; margin: 0 auto;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  display: flex; align-items: flex-end;
+  padding: 10px; gap: 10px;
+  box-shadow: var(--shadow);
+}
+textarea#prompt {
+  flex: 1; resize: none;
+  border: none; outline: none;
+  background: transparent; color: var(--text);
+  max-height: 200px;
+}
+.send {
+  border: none; outline: none; cursor: pointer;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--accent); color: #fff;
+  transition: transform .04s ease, background .15s ease;
+}
+.send:active { transform: translateY(1px); }
+.send:hover { background: var(--accent-hover); }
+
+.hint {
+  max-width: 920px; margin: 6px auto 0; color: var(--muted);
+  font-size: 12px; text-align: center;
+}
+
+/* ---------- Utility ---------- */
+.loading {
+  opacity: .8;
+  position: relative;
+}
+.loading::after {
+  content: "…";
+  animation: ellipsis 1.2s infinite steps(4);
+  margin-left: 2px;
+}
+@keyframes ellipsis {
+  0% { content:""; } 25% { content:"."; } 50% { content:".."; } 75% { content:"..."; } 100% { content:""; }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .chat { padding: 16px 10px 120px; }
+  .input-wrap { margin: 0 4px; }
+}
