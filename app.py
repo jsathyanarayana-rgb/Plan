@@ -1,20 +1,24 @@
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-import requests
 import os
 from dotenv import load_dotenv
+from openai import OpenAI
 
-# Load Hugging Face token from .env
+# Load environment variables
 load_dotenv()
-HF_TOKEN = os.getenv("HF_TOKEN")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
+if not OPENAI_API_KEY:
+    raise ValueError("❌ OPENAI_API_KEY not set. Add it in .env or Render Environment Variables.")
+
+# Initialize OpenAI client
+client = OpenAI(api_key=OPENAI_API_KEY)
+
+# Flask app
 app = Flask(__name__, static_folder="static", template_folder="templates")
-CORS(app)  # Allow HTML/JS to talk to Flask
+CORS(app)
 
-API_URL = "https://api-inference.huggingface.co/models/openai/gpt-oss-20b:fireworks-ai"
-HEADERS = {"Authorization": f"Bearer {HF_TOKEN}"}
-
-# Serve the chatbot HTML
+# Serve chatbot frontend
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -27,24 +31,18 @@ def chat():
         if not user_message:
             return jsonify({"error": "Message is required"}), 400
 
-        # Send to Hugging Face API
-        payload = {
-            "inputs": f"User: {user_message}\nAI:",
-            "parameters": {"max_new_tokens": 200, "temperature": 0.7}
-        }
-        response = requests.post(API_URL, headers=HEADERS, json=payload)
+        # OpenAI Chat Completion
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",   # cheap + fast, can swap to gpt-4o
+            messages=[
+                {"role": "system", "content": "You are PlanIt, a helpful career guidance assistant."},
+                {"role": "user", "content": user_message}
+            ],
+            max_tokens=200,
+            temperature=0.7
+        )
 
-        if response.status_code != 200:
-            return jsonify({
-                "error": f"HF API error {response.status_code}",
-                "details": response.text
-            }), 500
-
-        data = response.json()
-        bot_reply = data[0].get("generated_text", "").replace(
-            f"User: {user_message}\nAI:", ""
-        ).strip()
-
+        bot_reply = response.choices[0].message.content.strip()
         return jsonify({"reply": bot_reply})
 
     except Exception as e:
@@ -53,5 +51,5 @@ def chat():
 
 if __name__ == "__main__":
     from waitress import serve
-    port = int(os.environ.get("PORT", 5000))  # Render sets PORT env var
+    port = int(os.environ.get("PORT", 5000))  # Render sets PORT automatically
     serve(app, host="0.0.0.0", port=port)
